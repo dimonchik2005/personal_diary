@@ -1,0 +1,25 @@
+# Окружение и Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+
+# Настройки IDE
+.idea/
+
+# Секреты
+.env
+.env.*
+!.env.example
+
+# Локальные и сгенерированные данные
+db.sqlite3
+*.log
+media/
+staticfiles/
+
+# Проверки кода
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
