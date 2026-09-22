@@ -10,9 +10,7 @@ class CustomUserAdmin(UserAdmin):
     search_fields = ("email", "username", "phone")
     ordering = ("email",)
 
-    fieldsets = UserAdmin.fieldsets + (
-        ("Контакты", {"fields": ("phone",)}),
-    )
+    fieldsets = UserAdmin.fieldsets + (("Контакты", {"fields": ("phone",)}),)
 
     add_fieldsets = UserAdmin.add_fieldsets + (
         ("Контакты", {"fields": ("email", "phone")}),

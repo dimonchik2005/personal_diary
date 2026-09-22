@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Удаление записи — Личный дневник{% endblock %}
+
+{% block content %}
+    <div class="card shadow-sm">
+        <div class="card-body p-4">
+            <h1 class="h3 mb-3">Удалить запись?</h1>
+
+            <p>
+                Вы собираетесь удалить запись
+                <strong>«{{ entry.title }}»</strong>.
+            </p>
+
+            <p class="text-danger">
+                Восстановить её через сайт будет невозможно.
+            </p>
+
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-danger">
+                        Удалить
+                    </button>
+
+                    <a
+                        href="{% url 'diary:entry_detail' entry.pk %}"
+                        class="btn btn-outline-secondary"
+                    >
+                        Отмена
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}
