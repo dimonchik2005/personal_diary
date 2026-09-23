@@ -1,11 +1,20 @@
 {% extends "base.html" %}
 
-{% block title %}Вход — Личный дневник{% endblock %}
+{% block title %}
+{% if object %}Редактирование{% else %}Новая запись{% endif %}
+— Личный дневник
+{% endblock %}
 
 {% block content %}
 <div class="card shadow-sm">
     <div class="card-body p-4">
-        <h1 class="h3 mb-4 text-center">Вход в дневник</h1>
+        <h1 class="h3 mb-4">
+            {% if object %}
+            Редактирование записи
+            {% else %}
+            Новая запись
+            {% endif %}
+        </h1>
 
         <form method="post" novalidate>
             {% csrf_token %}
@@ -41,26 +50,19 @@
             </div>
             {% endfor %}
 
-            {% if next %}
-            <input type="hidden" name="next" value="{{ next }}">
-            {% endif %}
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    Сохранить
+                </button>
 
-            <button type="submit" class="btn btn-primary w-100">
-                Войти
-            </button>
+                <a
+                        href="{% url 'diary:entry_list' %}"
+                        class="btn btn-outline-secondary"
+                >
+                    Отмена
+                </a>
+            </div>
         </form>
-
-        <p class="text-center mt-3 mb-0">
-            Нет аккаунта?
-            <a href="{% url 'users:register' %}">
-                Зарегистрироваться
-            </a>
-        </p>
-        <p class="text-center mt-3 mb-0">
-            <a href="{% url 'users:resume_verification' %}">
-                Не подтвердили почту?
-            </a>
-        </p>
     </div>
 </div>
 {% endblock %}

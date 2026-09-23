@@ -10,23 +10,83 @@
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
         rel="stylesheet"
     >
+
+    <style>
+        .diary-header {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+            align-items: center;
+            gap: 16px;
+            padding: 16px 24px;
+        }
+
+        .diary-brand {
+            grid-column: 2;
+            max-width: 50vw;
+            text-align: center;
+            font-size: 1.25rem;
+            font-weight: 600;
+            overflow-wrap: anywhere;
+        }
+
+        .diary-actions {
+            grid-column: 3;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 8px;
+        }
+
+        @media (max-width: 767px) {
+            .diary-header {
+                grid-template-columns: minmax(0, 1fr);
+            }
+
+            .diary-brand {
+                grid-column: 1;
+                max-width: 100%;
+            }
+
+            .diary-actions {
+                grid-column: 1;
+                flex-wrap: wrap;
+            }
+        }
+    </style>
 </head>
+
 <body class="bg-light">
-<nav class="navbar bg-white border-bottom">
-    <div class="container">
-        <span class="navbar-brand mb-0">Личный дневник</span>
-
-        <div class="d-flex align-items-center gap-2">
+    <nav class="diary-header bg-white border-bottom">
+        <a
+            href="{% url 'diary:entry_list' %}"
+            class="diary-brand text-decoration-none text-body"
+        >
+            Личный дневник
             {% if user.is_authenticated %}
-                <a
-                    href="{% url 'users:account' %}"
-                    class="btn btn-outline-primary"
-                >
-                    Мой аккаунт
-                </a>
+                · <span id="headerUsername">{{ user.username }}</span>
+            {% endif %}
+        </a>
 
-                <form method="post" action="{% url 'users:logout' %}">
+        <div class="diary-actions">
+            {% if user.is_authenticated %}
+                <button
+                    type="button"
+                    class="btn btn-outline-secondary"
+                    data-bs-toggle="modal"
+                    data-bs-target="#profileModal"
+                    aria-label="Настройки аккаунта"
+                    title="Настройки аккаунта"
+                >
+                    <span aria-hidden="true">⚙</span>
+                </button>
+
+                <form
+                    method="post"
+                    action="{% url 'users:logout' %}"
+                    class="m-0"
+                >
                     {% csrf_token %}
+
                     <button type="submit" class="btn btn-outline-danger">
                         Выйти
                     </button>
@@ -47,15 +107,251 @@
                 </a>
             {% endif %}
         </div>
-    </div>
-</nav>
+    </nav>
+
     <main class="container py-5">
         <div class="row justify-content-center">
-            <div class="col-12 col-md-8 col-lg-6">
+            <div class="col-12 col-md-10 col-lg-8">
+                {% for message in messages %}
+                    <div class="alert alert-info" role="status">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+
                 {% block content %}
                 {% endblock %}
             </div>
         </div>
     </main>
+
+    {% if user.is_authenticated %}
+        {% include "users/includes/profile_modal.html" %}
+    {% endif %}
+
+    <div
+        class="toast-container position-fixed bottom-0 end-0 p-3"
+        aria-live="polite"
+        aria-atomic="true"
+    >
+        <div
+            id="settingsToast"
+            class="toast text-bg-success border-0"
+            role="status"
+            aria-atomic="true"
+        >
+            <div class="d-flex">
+                <div class="toast-body" id="settingsToastText"></div>
+
+                <button
+                    type="button"
+                    class="btn-close btn-close-white me-2 m-auto"
+                    data-bs-dismiss="toast"
+                    aria-label="Закрыть уведомление"
+                ></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap должен загружаться перед нашим скриптом. -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        const profileForm = document.getElementById("profileSettingsForm");
+
+        if (profileForm) {
+            // Создаём блок общей ошибки, если его ещё нет в шаблоне окна.
+            let requestError = document.getElementById("profileRequestError");
+
+            if (!requestError) {
+                requestError = document.createElement("div");
+                requestError.id = "profileRequestError";
+                requestError.className = "alert alert-danger d-none";
+                requestError.setAttribute("role", "alert");
+
+                profileForm.querySelector(".modal-body").prepend(requestError);
+            }
+
+            profileForm.addEventListener("submit", async function (event) {
+                event.preventDefault();
+
+                const submitButton = profileForm.querySelector(
+                    '[type="submit"]'
+                );
+
+                requestError.classList.add("d-none");
+                requestError.textContent = "";
+
+                profileForm.querySelectorAll(".js-profile-error").forEach(
+                    element => element.remove()
+                );
+
+                profileForm.querySelectorAll(".is-invalid").forEach(
+                    element => {
+                        element.classList.remove("is-invalid");
+                        element.removeAttribute("aria-invalid");
+
+                        const errorId = `${element.id}_ajax_error`;
+                        const descriptions = (
+                            element.getAttribute("aria-describedby") || ""
+                        ).split(/\s+/).filter(
+                            id => id && id !== errorId
+                        );
+
+                        if (descriptions.length) {
+                            element.setAttribute(
+                                "aria-describedby",
+                                descriptions.join(" ")
+                            );
+                        } else {
+                            element.removeAttribute("aria-describedby");
+                        }
+                    }
+                );
+
+                submitButton.disabled = true;
+
+                try {
+                    if (typeof bootstrap === "undefined") {
+                        throw new Error(
+                            "Bootstrap не загрузился. Проверьте соединение и обновите страницу."
+                        );
+                    }
+
+                    const response = await fetch(profileForm.action, {
+                        method: "POST",
+                        body: new FormData(profileForm),
+                        credentials: "same-origin",
+                        headers: {
+                            "Accept": "application/json"
+                        }
+                    });
+
+                    const contentType = response.headers.get(
+                        "content-type"
+                    ) || "";
+
+                    if (
+                        response.redirected ||
+                        !contentType.includes("application/json")
+                    ) {
+                        throw new Error(
+                            "Не удалось сохранить настройки. Обновите страницу и проверьте вход."
+                        );
+                    }
+
+                    const data = await response.json();
+
+                    if (response.status === 400 && data.errors) {
+                        for (const [name, errors] of Object.entries(data.errors)) {
+                            const field = profileForm.elements.namedItem(
+                                `profile-${name}`
+                            );
+
+                            const errorText = errors.map(
+                                error => error.message
+                            ).join(" ");
+
+                            if (field) {
+                                field.classList.add("is-invalid");
+                                field.setAttribute("aria-invalid", "true");
+
+                                const errorBlock = document.createElement("div");
+                                errorBlock.id = `${field.id}_ajax_error`;
+                                errorBlock.className = (
+                                    "invalid-feedback js-profile-error"
+                                );
+                                errorBlock.setAttribute("role", "alert");
+                                errorBlock.textContent = errorText;
+
+                                field.after(errorBlock);
+
+                                const descriptions = (
+                                    field.getAttribute("aria-describedby") || ""
+                                ).split(/\s+/).filter(Boolean);
+
+                                descriptions.push(errorBlock.id);
+                                field.setAttribute(
+                                    "aria-describedby",
+                                    descriptions.join(" ")
+                                );
+                            } else {
+                                requestError.textContent += errorText + " ";
+                                requestError.classList.remove("d-none");
+                            }
+                        }
+
+                        profileForm.querySelector(".is-invalid")?.focus();
+                        return;
+                    }
+
+                    if (!response.ok) {
+                        throw new Error(
+                            "Не удалось сохранить настройки. Попробуйте ещё раз."
+                        );
+                    }
+
+                    document.getElementById(
+                        "headerUsername"
+                    ).textContent = data.username;
+
+                    // Показываем сохранённый вариант никнейма и в форме.
+                    const usernameField = profileForm.elements.namedItem(
+                        "profile-username"
+                    );
+
+                    if (usernameField) {
+                        usernameField.value = data.username;
+                    }
+
+                    bootstrap.Modal.getOrCreateInstance(
+                        document.getElementById("profileModal")
+                    ).hide();
+
+                    document.getElementById(
+                        "settingsToastText"
+                    ).textContent = data.message;
+
+                    bootstrap.Toast.getOrCreateInstance(
+                        document.getElementById("settingsToast"),
+                        {delay: 3500}
+                    ).show();
+                } catch (error) {
+                    requestError.textContent = error.message;
+                    requestError.classList.remove("d-none");
+                } finally {
+                    submitButton.disabled = false;
+                }
+            });
+        }
+    </script>
+<script>
+    document.querySelectorAll('input[type="password"]').forEach((input) => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "input-group";
+
+        input.before(wrapper);
+        wrapper.append(input);
+
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "btn btn-outline-secondary";
+        button.textContent = "Показать";
+        button.setAttribute("aria-label", "Показать пароль");
+        button.setAttribute("aria-controls", input.id);
+
+        button.addEventListener("click", () => {
+            const showPassword = input.type === "password";
+
+            input.type = showPassword ? "text" : "password";
+            button.textContent = showPassword ? "Скрыть" : "Показать";
+            button.setAttribute(
+                "aria-label",
+                showPassword ? "Скрыть пароль" : "Показать пароль"
+            );
+        });
+
+        wrapper.append(button);
+    });
+</script>
 </body>
 </html>

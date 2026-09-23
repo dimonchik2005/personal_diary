@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Продолжить регистрацию — Личный дневник{% endblock %}
+
+{% block content %}
+    <div class="card shadow-sm">
+        <div class="card-body p-4">
+            <h1 class="h3 text-center mb-3">
+                Продолжить регистрацию
+            </h1>
+
+            <p class="text-muted">
+                Введите email и пароль, указанные при регистрации.
+                Затем подтвердите почту кодом из письма.
+            </p>
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+
+                {% for error in form.non_field_errors %}
+                    <div class="alert alert-danger" role="alert">
+                        {{ error }}
+                    </div>
+                {% endfor %}
+
+                {% for field in form %}
+                    <div class="mb-3">
+                        <label
+                            for="{{ field.id_for_label }}"
+                            class="form-label"
+                        >
+                            {{ field.label }}
+                        </label>
+
+                        {{ field }}
+
+                        {% if field.errors %}
+                            <div
+                                id="{{ field.auto_id }}_error"
+                                class="text-danger small mt-1"
+                                role="alert"
+                            >
+                                {% for error in field.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+
+                <button type="submit" class="btn btn-primary w-100">
+                    Продолжить
+                </button>
+            </form>
+        </div>
+    </div>
+{% endblock %}

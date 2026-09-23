@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}{{ entry.title }} — Личный дневник{% endblock %}
+
+{% block content %}
+<article class="card shadow-sm">
+    <div class="card-body p-4">
+        <h1 class="h3">{{ entry.title }}</h1>
+
+        <div class="text-muted small mb-4">
+            <div>
+                Создано: {{ entry.created_at|date:"d.m.Y H:i" }}
+            </div>
+            <div>
+                Изменено: {{ entry.updated_at|date:"d.m.Y H:i" }}
+            </div>
+        </div>
+
+        <div class="text-break">
+            {{ entry.content|linebreaks }}
+        </div>
+
+        <div class="d-flex gap-2 mt-4">
+            <a
+                    href="{% url 'diary:entry_update' entry.pk %}"
+                    class="btn btn-primary"
+            >
+                Редактировать
+            </a>
+            <a
+                    href="{% url 'diary:entry_delete' entry.pk %}"
+                    class="btn btn-outline-danger"
+            >
+                Удалить
+            </a>
+
+            <a
+                    href="{% url 'diary:entry_list' %}"
+                    class="btn btn-outline-secondary"
+            >
+                К списку
+            </a>
+        </div>
+    </div>
+</article>
+{% endblock %}
