@@ -17,8 +17,17 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import include, path
+from django.views.generic import RedirectView
 
 urlpatterns = [
+    path(
+        "",
+        RedirectView.as_view(
+            pattern_name="diary:entry_list",
+            permanent=False,
+        ),
+        name="home",
+    ),
     path("admin/", admin.site.urls),
     path("users/", include("users.urls")),
     path("diary/", include("diary.urls")),
