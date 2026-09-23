@@ -141,7 +141,10 @@ CELERY_TASK_SERIALIZER = "json"
 CELERY_TASK_IGNORE_RESULT = True
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_BACKEND = os.getenv(
+    "EMAIL_BACKEND",
+    "django.core.mail.backends.smtp.EmailBackend",
+)
 
 EMAIL_HOST = os.environ["EMAIL_HOST"]
 EMAIL_PORT = int(os.environ["EMAIL_PORT"])
