@@ -17,4 +17,7 @@ RUN useradd --create-home appuser
 
 COPY --chown=appuser:appuser . .
 
+RUN mkdir -p /app/staticfiles \
+    && chown -R appuser:appuser /app/staticfiles
+
 USER appuser
