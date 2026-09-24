@@ -33,6 +33,8 @@
 - Django Templates и Bootstrap 5.3
 - Poetry
 - Docker и Docker Compose
+- Gunicorn 
+- WhiteNoise 
 - Flake8, Black, isort
 - GitHub Actions — автоматические проверки и сборка Docker-образа
 
@@ -48,6 +50,7 @@
 | `users/tasks.py` | Фоновые задачи отправки писем |
 | `diary/` | Модели, формы и представления записей дневника |
 | `diary/mixins.py` | Ограничение выборки записей текущим пользователем |
+| `static/vendor/bootstrap/` | Локальные CSS и JavaScript Bootstrap, лицензия |
 | `templates/` | Общие шаблоны и страницы приложений |
 | `Dockerfile` | Образ приложения |
 | `docker-compose.yml` | Совместный запуск сервисов |
@@ -109,6 +112,9 @@ EMAIL_PORT=465
 EMAIL_USE_SSL=True
 EMAIL_HOST_USER=your_address@mail.ru
 EMAIL_HOST_PASSWORD=replace_with_app_password
+
+DEBUG=False
+ALLOWED_HOSTS=localhost,127.0.0.1
 ```
 
 Заглушки для ключа, паролей и адреса почты необходимо заменить.
