@@ -17,6 +17,7 @@ db.sqlite3
 *.log
 media/
 staticfiles/
+/staticfiles/
 
 # Проверки кода
 .pytest_cache/

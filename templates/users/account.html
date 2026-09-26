@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Мой аккаунт — Личный дневник{% endblock %}
+
+{% block content %}
+    <div class="card shadow-sm">
+        <div class="card-body p-4 text-center">
+            <h1 class="h3">Добро пожаловать, {{ user.username }}!</h1>
+            <p class="text-muted mb-0">
+                Вы вошли как {{ user.email }}.
+            </p>
+        </div>
+    </div>
+{% endblock %}
